@@ -26,6 +26,7 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
 
     User user;
     Enemy enemy;
+    Grid grid;
 
 
     public GameScreen(GameClass gameClass) {
@@ -34,9 +35,8 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
         orthographicCamera.setToOrtho(false,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
         user = new User();
         enemy = new Enemy();
+        grid = new Grid();
         spriteBatch = new SpriteBatch();
-        userX = ((Gdx.graphics.getWidth() / 2) - (Assets.user.getWidth() / 2));
-        userY = ((Gdx.graphics.getHeight() / 2) - (Assets.user.getHeight()/2));
 
         Gdx.input.setInputProcessor(new GestureDetector(this));
         Gdx.graphics.setContinuousRendering(false);
@@ -56,6 +56,7 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
         //spriteBatch.setProjectionMatrix(orthographicCamera.combined);
         spriteBatch.begin();
             //spriteBatch.draw(Assets.welcomeScreen, 0, 0);
+            spriteBatch.draw(grid.image, grid.bounds.x, grid.bounds.y);
             spriteBatch.draw(user.image,user.bounds.x,user.bounds.y);
             spriteBatch.draw(enemy.image, enemy.bounds.x, enemy.bounds.y);
         spriteBatch.end();

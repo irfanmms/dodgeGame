@@ -18,6 +18,7 @@ public class WelcomeScreen implements Screen, GestureDetector.GestureListener {
     private GameClass gameClass;
     OrthographicCamera orthographicCamera;
     SpriteBatch spriteBatch;
+    Icon icon;
 
     public WelcomeScreen(final GameClass gameClass) {
 
@@ -25,6 +26,7 @@ public class WelcomeScreen implements Screen, GestureDetector.GestureListener {
         orthographicCamera = new OrthographicCamera();
         orthographicCamera.setToOrtho(false, Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
         spriteBatch = new SpriteBatch();
+        icon = new Icon();
 
         Gdx.input.setInputProcessor(new GestureDetector(this));
 
@@ -45,13 +47,14 @@ public class WelcomeScreen implements Screen, GestureDetector.GestureListener {
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(2.37F, 0.27F, 0.36F, 1F);
+        Gdx.gl.glClearColor(0F, 0F, 0F, 1F);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         orthographicCamera.update();
 
         spriteBatch.setProjectionMatrix(orthographicCamera.combined);
         spriteBatch.begin();
-            spriteBatch.draw(Assets.welcomeScreen, 0, 0);
+            //spriteBatch.draw(Assets.welcomeScreen, 0, 0);
+            spriteBatch.draw(icon.image, icon.bounds.x, icon.bounds.y);
         spriteBatch.end();
     }
 

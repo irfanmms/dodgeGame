@@ -13,6 +13,6 @@ public class Enemy {
 
     public Enemy() {
         image = Assets.enemy;
-        bounds = new Circle(Gdx.graphics.getWidth()/2 - 12,Gdx.graphics.getHeight()/2 - 12,24);
+        bounds = new Circle(0,0,24);
     }
 }

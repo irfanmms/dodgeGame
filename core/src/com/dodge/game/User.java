@@ -1,5 +1,6 @@
 package com.dodge.game;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Circle;
 
@@ -14,6 +15,6 @@ public class User {
 
     public User() {
         image = Assets.user;
-        bounds = new Circle(0,0,16);
+        bounds = new Circle(Gdx.graphics.getWidth()/2 - 16,Gdx.graphics.getHeight()/2 - 16,16);
     }
 }
