@@ -1,18 +1,13 @@
 package com.dodge.game;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.dodge.game.Screens.WelcomeScreen;
+import com.dodge.game.AssetsPackage.Assets;
 
 public class GameClass extends Game {
 
-	public GameScreen gameScreen;
-	public WelcomeScreen welcomeScreen;
+	public com.dodge.game.Screens.GameScreen gameScreen;
+	public com.dodge.game.Screens.WelcomeScreen welcomeScreen;
 	public ActionResolver actionResolver;
 
 	public GameClass(ActionResolver actionResolver) {
@@ -26,7 +21,7 @@ public class GameClass extends Game {
 	}
 
 	public void setGameScreen() {
-		gameScreen = new GameScreen(this);
+		gameScreen = new com.dodge.game.Screens.GameScreen(this);
 		setScreen(gameScreen);
 	}
 

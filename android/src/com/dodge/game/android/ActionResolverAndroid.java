@@ -5,8 +5,6 @@ import android.widget.Toast;
 
 import com.dodge.game.ActionResolver;
 
-import android.os.Handler;
-
 /**
  * Created by Irfan Sharif on 5/17/2015.
  */

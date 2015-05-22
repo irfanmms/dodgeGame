@@ -1,11 +1,8 @@
-package com.dodge.game;
+package com.dodge.game.AssetsPackage;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-
-import static com.dodge.game.Assets.enemyTexture;
 
 /**
  * Created by Irfan Sharif on 5/17/2015.

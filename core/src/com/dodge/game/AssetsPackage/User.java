@@ -1,10 +1,8 @@
-package com.dodge.game;
+package com.dodge.game.AssetsPackage;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Circle;
-
-import java.awt.Rectangle;
 
 /**
  * Created by Irfan Sharif on 5/18/2015.

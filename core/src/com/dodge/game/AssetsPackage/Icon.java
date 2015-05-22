@@ -1,4 +1,4 @@
-package com.dodge.game;
+package com.dodge.game.AssetsPackage;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Sprite;

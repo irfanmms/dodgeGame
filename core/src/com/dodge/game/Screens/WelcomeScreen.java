@@ -1,68 +1,79 @@
-package com.dodge.game;
+package com.dodge.game.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Timer;
+import com.dodge.game.AssetsPackage.*;
+import com.dodge.game.GameClass;
+import com.dodge.game.SpriteAccessor;
 
-import java.util.Random;
+import aurelienribon.tweenengine.Tween;
+import aurelienribon.tweenengine.TweenManager;
 
-import sun.rmi.runtime.Log;
+import static java.lang.Thread.sleep;
 
 /**
- * Created by Irfan Sharif on 5/17/2015.
+ * Created by Irfan Sharif on 5/18/2015.
  */
-public class GameScreen implements Screen, GestureDetector.GestureListener{
+public class WelcomeScreen implements Screen, GestureDetector.GestureListener {
     private GameClass gameClass;
     OrthographicCamera orthographicCamera;
     SpriteBatch spriteBatch;
+    private TweenManager tweenManager;
+    Icon icon;
 
-    float userX, userY;
+    public WelcomeScreen(final GameClass gameClass) {
 
-    User user;
-    Enemy enemy;
-    Grid grid;
-
-
-    public GameScreen(GameClass gameClass) {
         this.gameClass = gameClass;
         orthographicCamera = new OrthographicCamera();
-        orthographicCamera.setToOrtho(false,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-        user = new User();
-        enemy = new Enemy();
-        grid = new Grid();
+        orthographicCamera.setToOrtho(false, Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
         spriteBatch = new SpriteBatch();
+        icon = new Icon();
 
         Gdx.input.setInputProcessor(new GestureDetector(this));
-        Gdx.graphics.setContinuousRendering(false);
+
+        tweenManager = new TweenManager();
+        Tween.registerAccessor(Sprite.class, new SpriteAccessor());
+        Tween.set(icon.image, SpriteAccessor.ALPHA).target(0).start(tweenManager);
+        Tween.to(icon.image, SpriteAccessor.ALPHA, 1f).target(1).start(tweenManager);
+        Tween.to(icon.image, SpriteAccessor.ALPHA, 1).target(0).delay(3).start(tweenManager);
+
+        float delay = 4;
+
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                gameClass.setGameScreen();
+            }
+        }, delay);
     }
 
     @Override
     public void show() {
-        spriteBatch = new SpriteBatch();
+
     }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(2.37F, 0.27F, 0.36F, 1F);
+        Gdx.gl.glClearColor(0F, 0F, 0F, 1F);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        //orthographicCamera.update();
+        orthographicCamera.update();
 
-        //spriteBatch.setProjectionMatrix(orthographicCamera.combined);
+        tweenManager.update(delta);
+
+        spriteBatch.setProjectionMatrix(orthographicCamera.combined);
         spriteBatch.begin();
             //spriteBatch.draw(Assets.welcomeScreen, 0, 0);
-            spriteBatch.draw(grid.image, grid.bounds.x, grid.bounds.y);
-            spriteBatch.draw(user.image,user.bounds.x,user.bounds.y);
-            spriteBatch.draw(enemy.image, enemy.bounds.x, enemy.bounds.y);
+            //spriteBatch.draw(icon.image,icon.bounds.x,icon.bounds.y);
+            icon.image.setCenter(Gdx.graphics.getWidth()/2,Gdx.graphics.getHeight()/2);
+            icon.image.draw(spriteBatch);
         spriteBatch.end();
-
-        if(user.bounds.overlaps(enemy.bounds)) gameClass.actionResolver.showToast("Overlap!");
-
     }
 
     @Override
@@ -107,20 +118,7 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
 
     @Override
     public boolean fling(float velocityX, float velocityY, int button) {
-        if(Math.abs(velocityX) > Math.abs(velocityY)) {
-            if(velocityX > 0) {
-                user.bounds.x += 50;
-            } else {
-                user.bounds.x -= 50;
-            }
-        } else {
-            if(velocityY > 0) {
-                user.bounds.y -= 50;
-            } else {
-                user.bounds.y += 50;
-            }
-        }
-        return true;
+        return false;
     }
 
     @Override
@@ -139,7 +137,7 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
     }
 
     @Override
-    public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2) {
+    public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2)  {
         return false;
     }
 }
