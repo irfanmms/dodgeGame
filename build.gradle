@@ -53,6 +53,7 @@ project(":android") {
         compile "com.badlogicgames.gdx:gdx-controllers-android:$gdxVersion"
         compile "com.badlogicgames.box2dlights:box2dlights:$box2DLightsVersion"
         compile "com.badlogicgames.ashley:ashley:$ashleyVersion"
+        compile fileTree(dir: '../libs', include: '*.jar')
     }
 }
 
@@ -72,6 +73,7 @@ project(":core") {
         compile "net.dermetfan.libgdx-utils:libgdx-utils-box2d:0.10.0"
         compile "com.underwaterapps.overlap2druntime:overlap2d-runtime-libgdx:0.0.8"
         compile "com.kotcrab.vis:vis-ui:0.7.4"
+        compile fileTree(dir: '../libs', include: '*.jar')
     }
 }
 
