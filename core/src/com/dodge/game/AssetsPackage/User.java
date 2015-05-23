@@ -10,9 +10,11 @@ import com.badlogic.gdx.math.Circle;
 public class User {
     public Sprite image;
     public final Circle bounds;
+    public Sprite imageBlur;
 
     public User() {
         image = Assets.user;
+        imageBlur = Assets.userBlur;
         bounds = new Circle(Gdx.graphics.getWidth()/2 - 16,Gdx.graphics.getHeight()/2 - 16,16);
     }
 }

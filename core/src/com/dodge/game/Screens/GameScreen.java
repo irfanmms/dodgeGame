@@ -2,8 +2,11 @@ package com.dodge.game.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.input.GestureDetector;
@@ -25,32 +28,37 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
     SpriteBatch spriteBatch;
 
     private TweenManager tweenManager;
+    Texture blurTex;
+    boolean paused;
 
     User user;
     Enemy enemy;
     Grid grid;
+    PauseButton pauseButton;
 
     public GameScreen(GameClass gameClass) {
+
+
         this.gameClass = gameClass;
         orthographicCamera = new OrthographicCamera();
         orthographicCamera.setToOrtho(false,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
         user = new User();
         enemy = new Enemy();
         grid = new Grid();
+        pauseButton = new PauseButton();
         spriteBatch = new SpriteBatch();
-
+        paused = false;
         Gdx.input.setInputProcessor(new GestureDetector(this));
         Gdx.graphics.setContinuousRendering(true);
 
         tweenManager = new TweenManager();
         Tween.registerAccessor(Sprite.class, new UserAccessor());
-        Tween.set(user.image, UserAccessor.POSITIONXY).target(Gdx.graphics.getWidth()/2 - 16,Gdx.graphics.getHeight()/2 - 16).start(tweenManager);
+        Tween.set(user.image, UserAccessor.POSITIONXY).target(Gdx.graphics.getWidth()/2 - 16,
+                Gdx.graphics.getHeight()/2 - 16).start(tweenManager);
     }
 
     @Override
-    public void show() {
-
-    }
+    public void show() {    }
 
     @Override
     public void render(float delta) {
@@ -61,8 +69,32 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
         tweenManager.update(delta * 10);
         spriteBatch.setProjectionMatrix(orthographicCamera.combined);
         spriteBatch.begin();
-            spriteBatch.draw(grid.image, grid.bounds.x, grid.bounds.y);
-            user.image.draw(spriteBatch);
+
+            if(paused){
+                grid.imageBlur.setBounds(Gdx.graphics.getWidth()/2 - grid.imageBlur.getWidth()/2,
+                        Gdx.graphics.getHeight() / 2 - grid.imageBlur.getWidth() / 2,
+                        grid.imageBlur.getWidth(), grid.imageBlur.getHeight());
+                grid.imageBlur.draw(spriteBatch);
+                user.imageBlur.setColor(1, 1, 1, .70f);
+                user.imageBlur.setCenter(user.bounds.x + user.image.getWidth() / 2,
+                        user.bounds.y + user.image.getHeight() / 2);
+                user.imageBlur.draw(spriteBatch);
+
+                Texture pauseTextTexture = new Texture("pauseText.png");
+                Sprite pauseText = new Sprite(pauseTextTexture);
+
+                pauseText.setSize(Gdx.graphics.getWidth()*0.75f,
+                        ((Gdx.graphics.getWidth()*0.75f)/pauseText.getWidth())*pauseText.getHeight());
+                pauseText.setCenter(Gdx.graphics.getWidth()/2, 4*Gdx.graphics.getHeight()/7);
+                pauseText.draw(spriteBatch);
+
+            } else {
+                spriteBatch.draw(grid.image, grid.bounds.x, grid.bounds.y);
+                user.image.draw(spriteBatch);
+            }
+
+            spriteBatch.draw(pauseButton.image, pauseButton.bounds.x, pauseButton.bounds.y);
+
         spriteBatch.end();
 
         if(user.bounds.overlaps(enemy.bounds)) gameClass.actionResolver.showToast("Overlap!");
@@ -70,87 +102,20 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
     }
 
     @Override
-    public void resize(int width, int height) {
-
-    }
+    public void resize(int width, int height) {    }
 
     @Override
-    public void pause() {
-
-    }
+    public void pause() {    }
 
     @Override
-    public void resume() {
-
-    }
+    public void resume() {    }
 
     @Override
-    public void hide() {
-        dispose();
-    }
+    public void hide() {    }
 
     @Override
     public void dispose() {
         spriteBatch.dispose();
-    }
-
-    @Override
-    public boolean touchDown(float x, float y, int pointer, int button) {
-        return false;
-    }
-
-    @Override
-    public boolean tap(float x, float y, int count, int button) {
-        return false;
-    }
-
-    @Override
-    public boolean longPress(float x, float y) {
-        return false;
-    }
-
-    @Override
-    public boolean fling(float velocityX, float velocityY, int button) {
-        if(Math.abs(velocityX) > Math.abs(velocityY)) {
-            if(velocityX > 0) {
-                if(!tooFar(user.bounds.x + (grid.bounds.getWidth()/3 - 10), user.bounds.y))
-                    user.bounds.x += (grid.bounds.getWidth() / 3 - 10);
-            } else {
-                if(!tooFar(user.bounds.x - (grid.bounds.getWidth()/3 - 10), user.bounds.y))
-                    user.bounds.x -= (grid.bounds.getWidth() / 3 - 10);
-            }
-        } else {
-            if(velocityY > 0) {
-                if(!tooFar(user.bounds.x, user.bounds.y - (grid.bounds.getWidth()/3 - 10)))
-                    user.bounds.y -= (grid.bounds.getWidth()/3 - 10);
-            } else {
-                if(!tooFar(user.bounds.x, user.bounds.y + (grid.bounds.getWidth()/3 - 10)))
-                    user.bounds.y += (grid.bounds.getWidth()/3 - 10);
-            }
-        }
-
-        Tween.to(user.image, UserAccessor.POSITIONXY, 1f).target(user.bounds.x, user.bounds.y).ease(Quint.OUT).start(tweenManager);
-        return true;
-    }
-
-    @Override
-    public boolean pan(float x, float y, float deltaX, float deltaY) {
-        return false;
-    }
-
-    @Override
-    public boolean panStop(float x, float y, int pointer, int button) {
-        return false;
-    }
-
-    @Override
-    public boolean zoom(float initialDistance, float distance) {
-        return false;
-    }
-
-    @Override
-    public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2) {
-        return false;
     }
 
     public boolean tooFar(float xCoord, float yCoord) {
@@ -161,7 +126,65 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
 
         if(distance > grid.bounds.getWidth()/2) {
             return true;
-        }
-        else return false;
+        } else return false;
     }
+
+    @Override
+    public boolean tap(float x, float y, int count, int button) {
+        if( (x >= Gdx.graphics.getWidth() - 2*pauseButton.image.getWidth()) &
+                (y <= 2*pauseButton.image.getWidth()) ) {
+            if(!paused) {
+                paused = true;
+            } else {
+                paused = false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean fling(float velocityX, float velocityY, int button) {
+        if(!paused) {
+            if (Math.abs(velocityX) > Math.abs(velocityY)) {
+                if (velocityX > 0) {
+                    if (!tooFar(user.bounds.x + (grid.bounds.getWidth() / 3 - 10), user.bounds.y))
+                        user.bounds.x += (grid.bounds.getWidth() / 3 - 10);
+                } else {
+                    if (!tooFar(user.bounds.x - (grid.bounds.getWidth() / 3 - 10), user.bounds.y))
+                        user.bounds.x -= (grid.bounds.getWidth() / 3 - 10);
+                }
+            } else {
+                if (velocityY > 0) {
+                    if (!tooFar(user.bounds.x, user.bounds.y - (grid.bounds.getWidth() / 3 - 10)))
+                        user.bounds.y -= (grid.bounds.getWidth() / 3 - 10);
+                } else {
+                    if (!tooFar(user.bounds.x, user.bounds.y + (grid.bounds.getWidth() / 3 - 10)))
+                        user.bounds.y += (grid.bounds.getWidth() / 3 - 10);
+                }
+            }
+
+            Tween.to(user.image, UserAccessor.POSITIONXY, 1f).target(user.bounds.x, user.bounds.y)
+                    .ease(Quint.OUT).start(tweenManager);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean touchDown(float x, float y, int pointer, int button) {   return false;   }
+
+    @Override
+    public boolean longPress(float x, float y) {    return false;   }
+
+    @Override
+    public boolean pan(float x, float y, float deltaX, float deltaY) {    return false;   }
+
+    @Override
+    public boolean panStop(float x, float y, int pointer, int button) {    return false;   }
+
+    @Override
+    public boolean zoom(float initialDistance, float distance) {    return false;   }
+
+    @Override
+    public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1,
+                         Vector2 pointer2) {    return false;   }
 }

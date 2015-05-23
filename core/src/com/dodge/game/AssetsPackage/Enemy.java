@@ -8,10 +8,12 @@ import com.badlogic.gdx.math.Circle;
  */
 public class Enemy {
     public Sprite image;
+    public Sprite Blur;
     public final Circle bounds;
 
     public Enemy() {
         image = Assets.enemy;
+        image = Assets.enemyBlur;
         bounds = new Circle(0,0,24);
     }
 }
