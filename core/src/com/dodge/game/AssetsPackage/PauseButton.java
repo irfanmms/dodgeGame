@@ -13,7 +13,8 @@ public class PauseButton {
 
     public PauseButton() {
         image = Assets.pauseButton;
-        bounds = new Rectangle(Gdx.graphics.getWidth() - Assets.pauseButton.getWidth() * 1.5f,
-                Gdx.graphics.getHeight() - Assets.pauseButton.getHeight() * 1.5f,image.getWidth(),image.getHeight());
+        image.setSize(image.getWidth()/2f,image.getHeight()/2f);
+        bounds = new Rectangle(Gdx.graphics.getWidth() - Assets.pauseButton.getWidth() * 2f,
+                Gdx.graphics.getHeight() - Assets.pauseButton.getHeight() * 3f,image.getWidth(),image.getHeight());
     }
 }

@@ -1,6 +1,7 @@
 package com.dodge.game.Screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
@@ -10,7 +11,10 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.input.GestureDetector;
+import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Timer;
 import com.dodge.game.UserAccessor;
 import com.dodge.game.GameClass;
 import com.dodge.game.AssetsPackage.*;
@@ -30,24 +34,31 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
     private TweenManager tweenManager;
     Texture blurTex;
     boolean paused;
+    boolean backPressed;
 
     User user;
     Enemy enemy;
     Grid grid;
+    Target target;
     PauseButton pauseButton;
 
+    Intersector intersector;
     public GameScreen(GameClass gameClass) {
 
-
+        Gdx.input.setCatchMenuKey(true);
         this.gameClass = gameClass;
         orthographicCamera = new OrthographicCamera();
         orthographicCamera.setToOrtho(false,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
         user = new User();
         enemy = new Enemy();
         grid = new Grid();
+        target = new Target();
+
+        intersector = new Intersector();
         pauseButton = new PauseButton();
         spriteBatch = new SpriteBatch();
         paused = false;
+        backPressed = false;
         Gdx.input.setInputProcessor(new GestureDetector(this));
         Gdx.graphics.setContinuousRendering(true);
 
@@ -56,6 +67,7 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
         Tween.set(user.image, UserAccessor.POSITIONXY).target(Gdx.graphics.getWidth()/2 - 16,
                 Gdx.graphics.getHeight()/2 - 16).start(tweenManager);
     }
+
 
     @Override
     public void show() {    }
@@ -71,26 +83,35 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
         spriteBatch.begin();
 
             if(paused){
-                grid.imageBlur.setBounds(Gdx.graphics.getWidth()/2 - grid.imageBlur.getWidth()/2,
+
+                grid.imageBlur.setBounds(Gdx.graphics.getWidth() / 2 - grid.imageBlur.getWidth() / 2,
                         Gdx.graphics.getHeight() / 2 - grid.imageBlur.getWidth() / 2,
                         grid.imageBlur.getWidth(), grid.imageBlur.getHeight());
                 grid.imageBlur.draw(spriteBatch);
+
+                if(!intersector.overlaps(user.bounds, target.bounds)) {
+                    target.imageBlur.setAlpha(0.9f);
+                    target.imageBlur.setPosition(target.boundsBlur.x, target.boundsBlur.y);
+                    target.imageBlur.draw(spriteBatch);
+                }
+
                 user.imageBlur.setColor(1, 1, 1, .70f);
-                user.imageBlur.setCenter(user.bounds.x + user.image.getWidth() / 2,
-                        user.bounds.y + user.image.getHeight() / 2);
+                user.imageBlur.setCenter(user.boundsBlur.x + user.imageBlur.getWidth() / 2,
+                        user.boundsBlur.y + user.imageBlur.getHeight() / 2);
                 user.imageBlur.draw(spriteBatch);
 
-                Texture pauseTextTexture = new Texture("pauseText.png");
-                Sprite pauseText = new Sprite(pauseTextTexture);
 
-                pauseText.setSize(Gdx.graphics.getWidth()*0.75f,
-                        ((Gdx.graphics.getWidth()*0.75f)/pauseText.getWidth())*pauseText.getHeight());
-                pauseText.setCenter(Gdx.graphics.getWidth()/2, 4*Gdx.graphics.getHeight()/7);
-                pauseText.draw(spriteBatch);
+                Assets.fontLight.draw(spriteBatch,"Paused",Gdx.graphics.getWidth()/2,
+                        4*Gdx.graphics.getHeight()/7,0, Align.center,false);
+
 
             } else {
                 spriteBatch.draw(grid.image, grid.bounds.x, grid.bounds.y);
+                spriteBatch.draw(target.image, target.bounds.x, target.bounds.y);
+
                 user.image.draw(spriteBatch);
+                user.image.setPosition(user.bounds.x, user.bounds.y);
+                Assets.fontHairline.draw(spriteBatch, "Best: ", 25, Gdx.graphics.getHeight() - 40);
             }
 
             spriteBatch.draw(pauseButton.image, pauseButton.bounds.x, pauseButton.bounds.y);
@@ -102,16 +123,18 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
     }
 
     @Override
-    public void resize(int width, int height) {    }
+    public void resize(int width, int height) {  }
 
     @Override
-    public void pause() {    }
+    public void pause() {
+        paused = true;
+    }
 
     @Override
     public void resume() {    }
 
     @Override
-    public void hide() {    }
+    public void hide() {      }
 
     @Override
     public void dispose() {
@@ -120,7 +143,7 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
 
     public boolean tooFar(float xCoord, float yCoord) {
         float deltaX = Math.abs(xCoord - Gdx.graphics.getWidth()/2);
-        float deltaY = Math.abs(yCoord - Gdx.graphics.getHeight() / 2);
+        float deltaY = Math.abs(yCoord + 42 - Gdx.graphics.getHeight()/2);
 
         double distance = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
 
@@ -131,40 +154,45 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
 
     @Override
     public boolean tap(float x, float y, int count, int button) {
-        if( (x >= Gdx.graphics.getWidth() - 2*pauseButton.image.getWidth()) &
-                (y <= 2*pauseButton.image.getWidth()) ) {
+        if( (x >= Gdx.graphics.getWidth() - 3*pauseButton.image.getWidth()) &
+                (y <= 4*pauseButton.image.getHeight()) ) {
             if(!paused) {
                 paused = true;
             } else {
                 paused = false;
             }
         }
+        tooFar(x, y);
         return true;
     }
 
     @Override
     public boolean fling(float velocityX, float velocityY, int button) {
         if(!paused) {
+            float userOriginX = user.bounds.x + user.image.getWidth()/2;
+            float userOriginY = user.bounds.y - user.image.getHeight()/2;
             if (Math.abs(velocityX) > Math.abs(velocityY)) {
                 if (velocityX > 0) {
-                    if (!tooFar(user.bounds.x + (grid.bounds.getWidth() / 3 - 10), user.bounds.y))
+                    if (!tooFar(userOriginX + (grid.bounds.getWidth() / 3 - 10), userOriginY))
                         user.bounds.x += (grid.bounds.getWidth() / 3 - 10);
                 } else {
-                    if (!tooFar(user.bounds.x - (grid.bounds.getWidth() / 3 - 10), user.bounds.y))
+                    if (!tooFar(userOriginX - (grid.bounds.getWidth() / 3 - 10), userOriginY))
                         user.bounds.x -= (grid.bounds.getWidth() / 3 - 10);
                 }
             } else {
                 if (velocityY > 0) {
-                    if (!tooFar(user.bounds.x, user.bounds.y - (grid.bounds.getWidth() / 3 - 10)))
-                        user.bounds.y -= (grid.bounds.getWidth() / 3 - 10);
+                    if (!tooFar(userOriginX, userOriginY - (grid.bounds.getHeight() / 3 - 10)))
+                        user.bounds.y -= (grid.bounds.getHeight() / 3 - 10);
                 } else {
-                    if (!tooFar(user.bounds.x, user.bounds.y + (grid.bounds.getWidth() / 3 - 10)))
-                        user.bounds.y += (grid.bounds.getWidth() / 3 - 10);
+                    if (!tooFar(userOriginX, userOriginY + (grid.bounds.getHeight() / 3 - 10)))
+                        user.bounds.y += (grid.bounds.getHeight() / 3 - 10);
                 }
             }
 
             Tween.to(user.image, UserAccessor.POSITIONXY, 1f).target(user.bounds.x, user.bounds.y)
                     .ease(Quint.OUT).start(tweenManager);
+            user.boundsBlur.x = (user.bounds.x - 11 );
+            user.boundsBlur.y = (user.bounds.y - 11);
         }
         return true;
     }

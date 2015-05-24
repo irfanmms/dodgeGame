@@ -1,8 +1,11 @@
 package com.dodge.game.AssetsPackage;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 
 /**
  * Created by Irfan Sharif on 5/17/2015.
@@ -30,8 +33,16 @@ public class Assets {
     public static Texture gridBlurTexture;
     public static Sprite gridBlur;
 
+    public static Texture targetTexture;
+    public static Sprite target;
+    public static Texture targetBlurTexture;
+    public static Sprite targetBlur;
+
     public static Texture pauseButtonTexture;
     public static Sprite pauseButton;
+
+    public static BitmapFont fontHairline;
+    public static BitmapFont fontLight;
 
     public static float SCALE_WIDTH_RATIO;
     public static float SCALE_HEIGHT_RATIO;
@@ -64,7 +75,23 @@ public class Assets {
         gridBlurTexture = new Texture("gridBlur.png");
         gridBlur = new Sprite(gridBlurTexture);
 
+        targetTexture = new Texture("target.png");
+        target = new Sprite(targetTexture);
+        targetBlurTexture = new Texture("targetBlur.png");
+        targetBlur = new Sprite(targetBlurTexture);
+
         pauseButtonTexture = new Texture("pauseButton.png");
         pauseButton = new Sprite(pauseButtonTexture);
+
+        FreeTypeFontGenerator genHairline = new FreeTypeFontGenerator(Gdx.files.internal("Montserrat-Light.otf"));
+        fontHairline = genHairline.generateFont(50);
+        fontHairline.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        fontHairline.setColor(Color.WHITE);
+
+        FreeTypeFontGenerator genLight = new FreeTypeFontGenerator(Gdx.files.internal("Montserrat-Regular.otf"));
+        fontLight = genLight.generateFont(128);
+        fontLight.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        fontLight.setColor(Color.WHITE);
+
     }
 }

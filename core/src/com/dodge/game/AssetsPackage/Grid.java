@@ -16,6 +16,6 @@ public class Grid {
     public Grid() {
         image = Assets.grid;
         imageBlur = Assets.gridBlur;
-        bounds = new Rectangle(Gdx.graphics.getWidth()/2 - 150,Gdx.graphics.getHeight()/2 - 150,300,300);
+        bounds = new Rectangle(Gdx.graphics.getWidth()/2 - image.getWidth()/2,Gdx.graphics.getHeight()/2 - image.getHeight()/2,300,300);
     }
 }
