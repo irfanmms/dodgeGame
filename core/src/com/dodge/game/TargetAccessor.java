@@ -5,17 +5,20 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import aurelienribon.tweenengine.TweenAccessor;
 
 /**
- * Created by Irfan Sharif on 5/21/2015.
+ * Created by Irfan Sharif on 5/24/2015.
  */
-public class UserAccessor implements TweenAccessor<Sprite>{
-
-    public static final int POSITIONX = 0;
+public class TargetAccessor implements TweenAccessor<Sprite> {
+    public static final int ROTATION = 0;
     public static final int POSITIONY = 1;
-    public static final int POSITIONXY = 2;
+    public static final int POSITIONX = 2;
+    public static final int POSITIONXY = 3;
 
     @Override
     public int getValues(Sprite target, int tweenType, float[] returnValues) {
-        switch (tweenType) {
+        switch (tweenType){
+            case ROTATION:
+                returnValues[0] = target.getRotation();
+                return 1;
             case POSITIONX:
                 returnValues[0] = target.getX();
                 return 1;
@@ -34,20 +37,22 @@ public class UserAccessor implements TweenAccessor<Sprite>{
 
     @Override
     public void setValues(Sprite target, int tweenType, float[] newValues) {
-        switch (tweenType) {
+        switch (tweenType){
+            case ROTATION:
+                target.setRotation(newValues[0]);
+                break;
             case POSITIONX:
                 target.setX(newValues[0]);
                 break;
             case POSITIONY:
-                target.setX(newValues[0]);
+                target.setY(newValues[0]);
                 break;
             case POSITIONXY:
-                //target.setX(newValues[0]);
-                //target.setY(newValues[1]);
-                target.setPosition(newValues[0], newValues[1]);
+                target.setX(newValues[0]);
+                target.setY(newValues[1]);
+                break;
             default:
                 assert false;
-                break;
         }
     }
 }

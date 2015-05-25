@@ -1,12 +1,9 @@
 package com.dodge.game.Screens;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -14,13 +11,18 @@ import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Timer;
-import com.dodge.game.UserAccessor;
+import com.dodge.game.AssetsPackage.Assets;
+import com.dodge.game.AssetsPackage.Enemy;
+import com.dodge.game.AssetsPackage.Grid;
+import com.dodge.game.AssetsPackage.PauseButton;
+import com.dodge.game.AssetsPackage.Target;
+import com.dodge.game.AssetsPackage.User;
 import com.dodge.game.GameClass;
-import com.dodge.game.AssetsPackage.*;
+import com.dodge.game.TargetAccessor;
 
 import aurelienribon.tweenengine.Tween;
 import aurelienribon.tweenengine.TweenManager;
+import aurelienribon.tweenengine.equations.Linear;
 import aurelienribon.tweenengine.equations.Quint;
 
 /**
@@ -32,9 +34,12 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
     SpriteBatch spriteBatch;
 
     private TweenManager tweenManager;
+    private TweenManager tweenManagerTwo;
     Texture blurTex;
     boolean paused;
     boolean backPressed;
+
+    private Tween targetTween;
 
     User user;
     Enemy enemy;
@@ -63,9 +68,18 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
         Gdx.graphics.setContinuousRendering(true);
 
         tweenManager = new TweenManager();
-        Tween.registerAccessor(Sprite.class, new UserAccessor());
-        Tween.set(user.image, UserAccessor.POSITIONXY).target(Gdx.graphics.getWidth()/2 - 16,
+        Tween.registerAccessor(Sprite.class, new TargetAccessor());
+        Tween.set(user.image, TargetAccessor.POSITIONXY).target(Gdx.graphics.getWidth()/2 - 16,
                 Gdx.graphics.getHeight()/2 - 16).start(tweenManager);
+
+        tweenManagerTwo = new TweenManager();
+        Tween.registerAccessor(Sprite.class, new TargetAccessor());
+        Tween.set(target.image, TargetAccessor.POSITIONXY).target(target.bounds.x, target.bounds.y).start(tweenManagerTwo);
+
+        target.image.setRotation(0);
+        Tween.set(target.image, TargetAccessor.ROTATION).target(target.image.getRotation());
+        targetTween = Tween.to(target.image, TargetAccessor.ROTATION, 3).target(360).repeat(Tween.INFINITY, 0).ease(Linear.INOUT);
+        targetTween.start(tweenManagerTwo);
     }
 
 
@@ -79,6 +93,7 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
         orthographicCamera.update();
 
         tweenManager.update(delta * 10);
+        tweenManagerTwo.update(delta);
         spriteBatch.setProjectionMatrix(orthographicCamera.combined);
         spriteBatch.begin();
 
@@ -92,6 +107,7 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
                 if(!intersector.overlaps(user.bounds, target.bounds)) {
                     target.imageBlur.setAlpha(0.9f);
                     target.imageBlur.setPosition(target.boundsBlur.x, target.boundsBlur.y);
+                    target.imageBlur.setRotation(target.image.getRotation());
                     target.imageBlur.draw(spriteBatch);
                 }
 
@@ -107,8 +123,9 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
 
             } else {
                 spriteBatch.draw(grid.image, grid.bounds.x, grid.bounds.y);
-                spriteBatch.draw(target.image, target.bounds.x, target.bounds.y);
+                //spriteBatch.draw(target.image, target.bounds.x, target.bounds.y);
 
+                target.image.draw(spriteBatch);
                 user.image.draw(spriteBatch);
                 user.image.setPosition(user.bounds.x, user.bounds.y);
                 Assets.fontHairline.draw(spriteBatch, "Best: ", 25, Gdx.graphics.getHeight() - 40);
@@ -158,11 +175,12 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
                 (y <= 4*pauseButton.image.getHeight()) ) {
             if(!paused) {
                 paused = true;
+                targetTween.pause();
             } else {
                 paused = false;
+                targetTween.resume();
             }
         }
-        tooFar(x, y);
         return true;
     }
 
@@ -189,7 +207,8 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
                 }
             }
 
-            Tween.to(user.image, UserAccessor.POSITIONXY, 1f).target(user.bounds.x, user.bounds.y)
+
+            Tween.to(user.image, TargetAccessor.POSITIONXY, 2f).target(user.bounds.x, user.bounds.y)
                     .ease(Quint.OUT).start(tweenManager);
             user.boundsBlur.x = (user.bounds.x - 11 );
             user.boundsBlur.y = (user.bounds.y - 11);
