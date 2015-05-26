@@ -43,6 +43,7 @@ public class Assets {
 
     public static BitmapFont fontHairline;
     public static BitmapFont fontLight;
+    public static BitmapFont fontRegular;
 
     public static float SCALE_WIDTH_RATIO;
     public static float SCALE_HEIGHT_RATIO;
@@ -88,10 +89,15 @@ public class Assets {
         fontHairline.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         fontHairline.setColor(Color.WHITE);
 
-        FreeTypeFontGenerator genLight = new FreeTypeFontGenerator(Gdx.files.internal("Montserrat-Regular.otf"));
-        fontLight = genLight.generateFont(128);
+        FreeTypeFontGenerator genLight = new FreeTypeFontGenerator(Gdx.files.internal("Montserrat-Light.otf"));
+        fontLight = genLight.generateFont(90);
         fontLight.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         fontLight.setColor(Color.WHITE);
+
+        FreeTypeFontGenerator genRegular = new FreeTypeFontGenerator(Gdx.files.internal("Montserrat-Regular.otf"));
+        fontRegular = genLight.generateFont(128);
+        fontRegular.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        fontRegular.setColor(Color.WHITE);
 
     }
 }

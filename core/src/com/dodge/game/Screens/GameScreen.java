@@ -4,21 +4,26 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Timer;
 import com.dodge.game.AssetsPackage.Assets;
 import com.dodge.game.AssetsPackage.Enemy;
 import com.dodge.game.AssetsPackage.Grid;
 import com.dodge.game.AssetsPackage.PauseButton;
 import com.dodge.game.AssetsPackage.Target;
 import com.dodge.game.AssetsPackage.User;
+import com.dodge.game.Coordinate;
 import com.dodge.game.GameClass;
 import com.dodge.game.SpriteAccessor;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
 
 import aurelienribon.tweenengine.Tween;
 import aurelienribon.tweenengine.TweenManager;
@@ -35,11 +40,11 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
 
     private TweenManager tweenManager;
     private TweenManager tweenManagerTwo;
-    Texture blurTex;
     boolean paused;
     boolean backPressed;
 
     private Tween targetTween;
+    List coordinateArray;
 
     User user;
     Enemy enemy;
@@ -48,8 +53,9 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
     PauseButton pauseButton;
 
     Intersector intersector;
-    public GameScreen(GameClass gameClass) {
+    int currentScore;
 
+    public GameScreen(GameClass gameClass) {
         Gdx.input.setCatchMenuKey(true);
         this.gameClass = gameClass;
         orthographicCamera = new OrthographicCamera();
@@ -58,6 +64,27 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
         enemy = new Enemy();
         grid = new Grid();
         target = new Target();
+        currentScore = -1;
+
+        coordinateArray = new LinkedList();
+        coordinateArray.add(new Coordinate( (Gdx.graphics.getWidth()/2) - (grid.bounds.getWidth() / 3 - 10),
+                (Gdx.graphics.getHeight()/2) - (grid.bounds.getHeight() / 3 - 10) ) );
+        coordinateArray.add(new Coordinate((Gdx.graphics.getWidth() / 2),
+                (Gdx.graphics.getHeight() / 2) - (grid.bounds.getHeight() / 3 - 10)));
+        coordinateArray.add(new Coordinate( (Gdx.graphics.getWidth()/2) + (grid.bounds.getWidth() / 3 - 10),
+                (Gdx.graphics.getHeight()/2) - (grid.bounds.getHeight() / 3 - 10) ) );
+        coordinateArray.add(new Coordinate( (Gdx.graphics.getWidth()/2) - (grid.bounds.getWidth() / 3 - 10),
+                (Gdx.graphics.getHeight()/2) ) );
+        coordinateArray.add(new Coordinate((Gdx.graphics.getWidth() / 2),
+                (Gdx.graphics.getHeight() / 2)));
+        coordinateArray.add(new Coordinate( (Gdx.graphics.getWidth()/2) + (grid.bounds.getWidth() / 3 - 10),
+                (Gdx.graphics.getHeight()/2) ) );
+        coordinateArray.add(new Coordinate( (Gdx.graphics.getWidth()/2) - (grid.bounds.getWidth() / 3 - 10),
+                (Gdx.graphics.getHeight()/2) + (grid.bounds.getHeight() / 3 - 10) ) );
+        coordinateArray.add(new Coordinate( (Gdx.graphics.getWidth()/2),
+                (Gdx.graphics.getHeight()/2) + (grid.bounds.getHeight() / 3 - 10) ) );
+        coordinateArray.add(new Coordinate((Gdx.graphics.getWidth() / 2) + (grid.bounds.getWidth() / 3 - 10),
+                (Gdx.graphics.getHeight() / 2) + (grid.bounds.getHeight() / 3 - 10)));
 
         intersector = new Intersector();
         pauseButton = new PauseButton();
@@ -82,10 +109,6 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
         targetTween.start(tweenManagerTwo);
     }
 
-
-    @Override
-    public void show() {    }
-
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(2.37F, 0.27F, 0.36F, 1F);
@@ -98,7 +121,6 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
         spriteBatch.begin();
 
             if(paused){
-
                 grid.imageBlur.setBounds(Gdx.graphics.getWidth() / 2 - grid.imageBlur.getWidth() / 2,
                         Gdx.graphics.getHeight() / 2 - grid.imageBlur.getWidth() / 2,
                         grid.imageBlur.getWidth(), grid.imageBlur.getHeight());
@@ -106,7 +128,6 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
 
                 if(!intersector.overlaps(user.bounds, target.bounds)) {
                     target.imageBlur.setAlpha(0.9f);
-                    target.imageBlur.setPosition(target.boundsBlur.x, target.boundsBlur.y);
                     target.imageBlur.setRotation(target.image.getRotation());
                     target.imageBlur.draw(spriteBatch);
                 }
@@ -117,27 +138,35 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
                 user.imageBlur.draw(spriteBatch);
 
 
-                Assets.fontLight.draw(spriteBatch,"Paused",Gdx.graphics.getWidth()/2,
+                Assets.fontRegular.draw(spriteBatch,"Paused",Gdx.graphics.getWidth()/2,
                         4*Gdx.graphics.getHeight()/7,0, Align.center,false);
-
-
             } else {
                 spriteBatch.draw(grid.image, grid.bounds.x, grid.bounds.y);
-                //spriteBatch.draw(target.image, target.bounds.x, target.bounds.y);
-
                 target.image.draw(spriteBatch);
                 user.image.draw(spriteBatch);
                 user.image.setPosition(user.bounds.x, user.bounds.y);
                 Assets.fontHairline.draw(spriteBatch, "Best: ", 25, Gdx.graphics.getHeight() - 40);
+                Assets.fontLight.draw(spriteBatch, currentScore + "", 25, Gdx.graphics.getHeight() - 40 - 40);
             }
 
             spriteBatch.draw(pauseButton.image, pauseButton.bounds.x, pauseButton.bounds.y);
 
         spriteBatch.end();
 
-        if(user.bounds.overlaps(enemy.bounds)) gameClass.actionResolver.showToast("Overlap!");
-
+        if(intersector.overlaps(user.bounds, target.bounds)) {
+            newPosition(target.image.getX() + target.image.getWidth()/2,
+                    target.image.getY() - target.image.getHeight()/2);
+            currentScore++;
+        }
     }
+
+    @Override
+    public void dispose() {
+        spriteBatch.dispose();
+    }
+
+    @Override
+    public void show() {    }
 
     @Override
     public void resize(int width, int height) {  }
@@ -153,9 +182,39 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
     @Override
     public void hide() {      }
 
-    @Override
-    public void dispose() {
-        spriteBatch.dispose();
+    public void newPosition(float xCoord, float yCoord) {
+        target.image.setAlpha(0);
+        target.imageBlur.setAlpha(0);
+
+        Random rand = new Random();
+        Coordinate currentCoord = new Coordinate(xCoord, yCoord);
+        Coordinate nextCoord;
+
+        do {
+            int randomNum = rand.nextInt((9 - 1) + 1);
+            nextCoord = (Coordinate) coordinateArray.get(randomNum);
+
+        } while( (nextCoord.x == currentCoord.x) | (nextCoord.y == currentCoord.y) );
+
+        target.image.setCenter(nextCoord.x, nextCoord.y);
+        target.imageBlur.setCenter(nextCoord.x, nextCoord.y);
+
+        target.bounds.x = nextCoord.x - target.image.getWidth()/2;
+        target.bounds.y = nextCoord.y - target.image.getHeight()/2;
+
+
+        target.boundsBlur.x = nextCoord.x - target.imageBlur.getWidth()/2;
+        target.boundsBlur.y = nextCoord.y - target.imageBlur.getHeight()/2;
+
+        float delay = 0.3f;
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+
+                target.image.setAlpha(1);
+                target.imageBlur.setAlpha(1);
+            }
+        }, delay);
     }
 
     public boolean tooFar(float xCoord, float yCoord) {
@@ -167,21 +226,6 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
         if(distance > grid.bounds.getWidth()/2) {
             return true;
         } else return false;
-    }
-
-    @Override
-    public boolean tap(float x, float y, int count, int button) {
-        if( (x >= Gdx.graphics.getWidth() - 3*pauseButton.image.getWidth()) &
-                (y <= 4*pauseButton.image.getHeight()) ) {
-            if(!paused) {
-                paused = true;
-                targetTween.pause();
-            } else {
-                paused = false;
-                targetTween.resume();
-            }
-        }
-        return true;
     }
 
     @Override
@@ -206,12 +250,25 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
                         user.bounds.y += (grid.bounds.getHeight() / 3 - 10);
                 }
             }
-
-
             Tween.to(user.image, SpriteAccessor.POSITIONXY, 2f).target(user.bounds.x, user.bounds.y)
                     .ease(Quint.OUT).start(tweenManager);
             user.boundsBlur.x = (user.bounds.x - 11 );
             user.boundsBlur.y = (user.bounds.y - 11);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean tap(float x, float y, int count, int button) {
+        if( (x >= Gdx.graphics.getWidth() - 3*pauseButton.image.getWidth()) &
+                (y <= 4*pauseButton.image.getHeight()) ) {
+            if(!paused) {
+                paused = true;
+                targetTween.pause();
+            } else {
+                paused = false;
+                targetTween.resume();
+            }
         }
         return true;
     }
