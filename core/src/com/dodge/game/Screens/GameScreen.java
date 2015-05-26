@@ -18,7 +18,7 @@ import com.dodge.game.AssetsPackage.PauseButton;
 import com.dodge.game.AssetsPackage.Target;
 import com.dodge.game.AssetsPackage.User;
 import com.dodge.game.GameClass;
-import com.dodge.game.TargetAccessor;
+import com.dodge.game.SpriteAccessor;
 
 import aurelienribon.tweenengine.Tween;
 import aurelienribon.tweenengine.TweenManager;
@@ -68,17 +68,17 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
         Gdx.graphics.setContinuousRendering(true);
 
         tweenManager = new TweenManager();
-        Tween.registerAccessor(Sprite.class, new TargetAccessor());
-        Tween.set(user.image, TargetAccessor.POSITIONXY).target(Gdx.graphics.getWidth()/2 - 16,
+        Tween.registerAccessor(Sprite.class, new SpriteAccessor());
+        Tween.set(user.image, SpriteAccessor.POSITIONXY).target(Gdx.graphics.getWidth()/2 - 16,
                 Gdx.graphics.getHeight()/2 - 16).start(tweenManager);
 
         tweenManagerTwo = new TweenManager();
-        Tween.registerAccessor(Sprite.class, new TargetAccessor());
-        Tween.set(target.image, TargetAccessor.POSITIONXY).target(target.bounds.x, target.bounds.y).start(tweenManagerTwo);
+        Tween.registerAccessor(Sprite.class, new SpriteAccessor());
+        Tween.set(target.image, SpriteAccessor.POSITIONXY).target(target.bounds.x, target.bounds.y).start(tweenManagerTwo);
 
         target.image.setRotation(0);
-        Tween.set(target.image, TargetAccessor.ROTATION).target(target.image.getRotation());
-        targetTween = Tween.to(target.image, TargetAccessor.ROTATION, 3).target(360).repeat(Tween.INFINITY, 0).ease(Linear.INOUT);
+        Tween.set(target.image, SpriteAccessor.ROTATION).target(target.image.getRotation());
+        targetTween = Tween.to(target.image, SpriteAccessor.ROTATION, 3).target(360).repeat(Tween.INFINITY, 0).ease(Linear.INOUT);
         targetTween.start(tweenManagerTwo);
     }
 
@@ -208,7 +208,7 @@ public class GameScreen implements Screen, GestureDetector.GestureListener{
             }
 
 
-            Tween.to(user.image, TargetAccessor.POSITIONXY, 2f).target(user.bounds.x, user.bounds.y)
+            Tween.to(user.image, SpriteAccessor.POSITIONXY, 2f).target(user.bounds.x, user.bounds.y)
                     .ease(Quint.OUT).start(tweenManager);
             user.boundsBlur.x = (user.bounds.x - 11 );
             user.boundsBlur.y = (user.bounds.y - 11);
